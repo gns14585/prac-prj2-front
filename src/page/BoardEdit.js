@@ -4,7 +4,15 @@ import {
   FormControl,
   FormLabel,
   Input,
+  Modal,
+  ModalBody,
+  ModalCloseButton,
+  ModalContent,
+  ModalFooter,
+  ModalHeader,
+  ModalOverlay,
   Spinner,
+  useDisclosure,
   useToast,
 } from "@chakra-ui/react";
 import { useNavigate, useParams } from "react-router-dom";
@@ -22,6 +30,8 @@ export function BoardEdit() {
 
   const toast = useToast();
   const navigate1 = useNavigate();
+
+  const { isOpen, onClose, onOpen } = useDisclosure();
 
   useEffect(() => {
     axios
@@ -41,9 +51,11 @@ export function BoardEdit() {
       .put("/api/board/edit", board)
       .then(() => {
         toast({
+          // 여기 id는 요청할때 보내는 board.id
           description: board.id + "번 게시글이 수정되었습니다.",
           status: "success",
         });
+        // 여기에 있는 id는 주소창 :id
         navigate("/board/" + id);
       })
       .catch((error) => {
@@ -59,7 +71,7 @@ export function BoardEdit() {
           });
         }
       })
-      .finally(() => console.log("done"));
+      .finally(() => onClose());
   }
 
   return (
@@ -102,11 +114,28 @@ export function BoardEdit() {
         />
       </FormControl>
 
-      <Button colorScheme="blue" onClick={handleSubmit}>
+      <Button colorScheme="blue" onClick={onOpen}>
         저장
       </Button>
       {/* -1은 이전화면 */}
       <Button onClick={() => navigate(-1)}>취소</Button>
+
+      {/* 수정 모달 */}
+      <Modal isOpen={isOpen} onClose={onClose}>
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>수정 확인</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>수정 하시겠습니까?</ModalBody>
+
+          <ModalFooter>
+            <Button onClick={onClose}>닫기</Button>
+            <Button onClick={handleSubmit} colorScheme="blue">
+              저장
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
     </Box>
   );
 }

@@ -1,5 +1,12 @@
-import { Box, FormControl, FormLabel, Input, Spinner } from "@chakra-ui/react";
-import { useParams } from "react-router-dom";
+import {
+  Box,
+  Button,
+  FormControl,
+  FormLabel,
+  Input,
+  Spinner,
+} from "@chakra-ui/react";
+import { useNavigate, useParams } from "react-router-dom";
 import { useImmer } from "use-immer";
 import { useEffect } from "react";
 import axios from "axios";
@@ -9,6 +16,8 @@ export function BoardEdit() {
 
   // /edit/:id
   const { id } = useParams();
+
+  const navigate = useNavigate();
 
   useEffect(() => {
     axios
@@ -59,6 +68,10 @@ export function BoardEdit() {
           }
         />
       </FormControl>
+
+      <Button colorScheme="blue">저장</Button>
+      {/* -1은 이전화면 */}
+      <Button onClick={() => navigate(-1)}>취소</Button>
     </Box>
   );
 }

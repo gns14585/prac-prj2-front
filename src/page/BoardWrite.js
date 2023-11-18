@@ -30,11 +30,20 @@ export function BoardWrite() {
           status: "success",
         });
       })
-      .catch(() => {
-        toast({
-          description: "저장 중에 문제가 발생하였습니다.",
-          status: "error",
-        });
+      .catch((error) => {
+        // 작성중 발생한 오류
+        if (error.response.status === 400) {
+          toast({
+            description: "작성한 내용을 확인해주세요.",
+            status: "error",
+          });
+        } else {
+          // 서버에서 발생한 오류
+          toast({
+            description: "저장 중에 문제가 발생하였습니다.",
+            status: "error",
+          });
+        }
       })
       .finally(() => console.log("done"));
   }

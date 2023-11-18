@@ -4,7 +4,16 @@ import {
   FormControl,
   FormLabel,
   Input,
+  Modal,
+  ModalBody,
+  ModalCloseButton,
+  ModalContent,
+  ModalFooter,
+  ModalHeader,
+  ModalOverlay,
   Spinner,
+  useDisclosure,
+  useToast,
 } from "@chakra-ui/react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useImmer } from "use-immer";
@@ -18,6 +27,8 @@ export function BoardEdit() {
   const { id } = useParams();
 
   const navigate = useNavigate();
+  const toast = useToast();
+  const { isOpen, onOpen, onClose } = useDisclosure();
 
   useEffect(() => {
     axios
@@ -35,8 +46,19 @@ export function BoardEdit() {
 
     axios
       .put("/api/board/edit", board)
-      .then(() => console.log("good"))
-      .catch(() => console.log("bad"))
+      .then(() => {
+        toast({
+          description: id + "번 글 수정 되었습니다.",
+          status: "success",
+        });
+        navigate("/");
+      })
+      .catch(() => {
+        toast({
+          description: "수정 중 문제가 발생하였습니다.",
+          status: "error",
+        });
+      })
       .finally(() => console.log("done"));
   }
 
@@ -80,11 +102,28 @@ export function BoardEdit() {
         />
       </FormControl>
 
-      <Button colorScheme="blue" onClick={handleSubmit}>
+      <Button colorScheme="blue" onClick={onOpen}>
         저장
       </Button>
       {/* -1은 이전화면 */}
       <Button onClick={() => navigate(-1)}>취소</Button>
+
+      {/* 수정 모달 */}
+      <Modal isOpen={isOpen} onClose={onClose}>
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>수정 확인</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>수정 하시겠습니까?</ModalBody>
+
+          <ModalFooter>
+            <Button onClick={onClose}>닫기</Button>
+            <Button onClick={handleSubmit} colorScheme="red">
+              저장
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
     </Box>
   );
 }

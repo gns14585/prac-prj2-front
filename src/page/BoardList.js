@@ -8,11 +8,15 @@ import {
   Th,
   Thead,
   Tr,
+  useToast,
 } from "@chakra-ui/react";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 export function BoardList() {
   const [boardList, setBoardList] = useState(null);
+
+  const navigate = useNavigate();
 
   useEffect(() => {
     axios
@@ -40,7 +44,16 @@ export function BoardList() {
           <Tbody>
             {boardList &&
               boardList.map((board) => (
-                <Tr key={board.id}>
+                // 각 데이터마다 key props 추가했음
+                // board.id 가 pk 니까 id로 추가
+                // 각 행을 클릭하면 board.id(pk) 로 이동 ex)/board/22 or 8 등
+                <Tr
+                  _hover={{
+                    cursor: "pointer",
+                  }}
+                  key={board.id}
+                  onClick={() => navigate("/board/" + board.id)}
+                >
                   <Td>{board.id}</Td>
                   <Td>{board.title}</Td>
                   <Td>{board.writer}</Td>

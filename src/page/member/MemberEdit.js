@@ -15,6 +15,8 @@ import {
 export function MemberEdit() {
   const [member, setMember] = useState(null);
   const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [passwordCheck, setPasswordCheck] = useState("");
   const [emailAvailable, setEmailAvailable] = useState(false);
 
   const toast = useToast();
@@ -40,6 +42,17 @@ export function MemberEdit() {
 
   // 기존 이메일과 같거나, 중복확인을 했거나
   let emailChecked = sameOriginEmail || emailAvailable;
+
+  // 암호가 없으면 기존암호
+  // 암호를 작성하면 새 암호, 암호확인 체크
+  let passwordChecekd = false;
+  if (passwordCheck === password) {
+    passwordChecekd = true;
+  }
+  if (password.length === 0) {
+    passwordChecekd = true;
+  }
+
   function handleEmailCheck() {
     const searchParams = new URLSearchParams();
     searchParams.set("email", email);
@@ -72,8 +85,24 @@ export function MemberEdit() {
       <h1>{id}님 정보 수정</h1>
       <FormControl>
         <FormLabel>password</FormLabel>
-        <Input type="text" />
+        <Input
+          type="text"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+        />
       </FormControl>
+
+      {/* password가 빈값이면 해당 체크 form이 나오지 않고 값이 있으면 나옴 */}
+      {password.length > 0 && (
+        <FormControl>
+          <FormLabel>password 확인</FormLabel>
+          <Input
+            type="text"
+            value={passwordCheck}
+            onChange={(e) => setPasswordCheck(e.target.value)}
+          />
+        </FormControl>
+      )}
 
       {/* email을 변경하면(작성시작) 중복체크 다시 하도록 */}
       {/* 기존 email과 같으면 중복확인 안해도 됨. */}
@@ -95,7 +124,13 @@ export function MemberEdit() {
         </Flex>
       </FormControl>
 
-      <Button colorScheme="purple">저장</Button>
+      <Button
+        // 암호와 이메일이 다 true일때 저장버튼 활성화
+        isDisabled={!emailChecked || !passwordChecekd}
+        colorScheme="purple"
+      >
+        저장
+      </Button>
     </Box>
   );
 }

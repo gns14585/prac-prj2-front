@@ -1,4 +1,4 @@
-import { useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import {
@@ -8,7 +8,15 @@ import {
   FormControl,
   FormLabel,
   Input,
+  Modal,
+  ModalBody,
+  ModalCloseButton,
+  ModalContent,
+  ModalFooter,
+  ModalHeader,
+  ModalOverlay,
   Spinner,
+  useDisclosure,
   useToast,
 } from "@chakra-ui/react";
 
@@ -20,6 +28,8 @@ export function MemberEdit() {
   const [emailAvailable, setEmailAvailable] = useState(false);
 
   const toast = useToast();
+  const { onClose, onOpen, isOpen } = useDisclosure();
+  const navigate = useNavigate();
 
   // MemberView 에서 수정버튼을 눌렀을때 navigate("edit?" + params.toString())
   // 로 넘기는데, 그 pamras url을 받기 위해 useSearchParams() 사용해서 받아줘야함
@@ -82,7 +92,30 @@ export function MemberEdit() {
 
   function handleSubmit() {
     // put /api/member/edit {id, password, email}
-    axios.put("/api/member/edit", { id: member.id, password, email });
+    axios
+      .put("/api/member/edit", { id: member.id, password, email })
+      .then(() => {
+        toast({
+          description: "회원정보가 수정되었습니다..",
+          status: "success",
+        });
+        // 모달창 안에 수정버튼을 누르고 난 뒤 이동되는곳(회원정보보기)
+        navigate("/member?" + params.toString());
+      })
+      .catch((error) => {
+        if (error.response.status === 401 || error.response.status === 403) {
+          toast({
+            description: "수정 권한이 없습니다.",
+            status: "error",
+          });
+        } else {
+          toast({
+            description: "수정중에 문제가 발생하였습니다.",
+            status: "error",
+          });
+        }
+      })
+      .finally(() => onClose());
   }
 
   return (
@@ -133,10 +166,27 @@ export function MemberEdit() {
         // 암호와 이메일이 다 true일때 저장버튼 활성화
         isDisabled={!emailChecked || !passwordChecekd}
         colorScheme="purple"
-        onClick={handleSubmit}
+        onClick={onOpen}
       >
         수정
       </Button>
+
+      {/* 수정 모달 */}
+      <Modal isOpen={isOpen} onClose={onClose}>
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>수정 확인</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>수정 하시겠습니까?</ModalBody>
+
+          <ModalFooter>
+            <Button onClick={onClose}>닫기</Button>
+            <Button onClick={handleSubmit} colorScheme="red">
+              수정
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
     </Box>
   );
 }

@@ -6,6 +6,7 @@ import {
   FormErrorMessage,
   FormLabel,
   Input,
+  useToast,
 } from "@chakra-ui/react";
 import { useState } from "react";
 import axios from "axios";
@@ -18,6 +19,8 @@ export function MemberSginup() {
 
   // 아이디 가능한지에 대한 변수 , 기본값은 false
   const [idAvailable, setIdAvailable] = useState(false);
+  const [emailAvailable, setEmailAvailable] = useState(false);
+  const toast = useToast();
 
   // submitAvailable 함수는 회원가입 폼 안에 하나라도 작성되지 않으면
   // 가입버튼 활성화 되지 않도록 설정
@@ -27,6 +30,9 @@ export function MemberSginup() {
 
   // 중복체크를 누르지 않으면 가입버튼 비활성화
   if (!idAvailable) {
+    submitAvailable = false;
+  }
+  if (!emailAvailable) {
     submitAvailable = false;
   }
 
@@ -64,11 +70,43 @@ export function MemberSginup() {
       // 아이디가 있으면 사용하지 못함
       .then(() => {
         setIdAvailable(false);
+        toast({
+          description: "아이디가 이미 존재합니다.",
+          status: "warning",
+        });
       })
       // 아이디가 없으면 사용 가능
       .catch((error) => {
         if (error.response.status === 404) {
           setIdAvailable(true);
+          toast({
+            description: "아이디 사용 가능합니다.",
+            status: "success",
+          });
+        }
+      });
+  }
+
+  function handleEmailCheck() {
+    const searchParams = new URLSearchParams();
+    searchParams.set("email", email);
+
+    axios
+      .get("/api/member/check?" + searchParams.toString())
+      .then(() => {
+        setEmailAvailable(false);
+        toast({
+          description: "email이 이미 존재합니다.",
+          status: "warning",
+        });
+      })
+      .catch((error) => {
+        setEmailAvailable(true);
+        if (error.response.status === 404) {
+          toast({
+            description: "email 사용이 가능합니다.",
+            status: "success",
+          });
         }
       });
   }
@@ -114,13 +152,20 @@ export function MemberSginup() {
         <FormErrorMessage>암호가 다릅니다.</FormErrorMessage>
       </FormControl>
 
-      <FormControl>
+      <FormControl isInvalid={!emailAvailable}>
         <FormLabel>email</FormLabel>
-        <Input
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-        />
+        <Flex>
+          <Input
+            type="email"
+            value={email}
+            onChange={(e) => {
+              setEmailAvailable(false);
+              setEmail(e.target.value);
+            }}
+          />
+          <Button onClick={handleEmailCheck}>중복체크</Button>
+        </Flex>
+        <FormErrorMessage>Email 중복체크를 해주세요.</FormErrorMessage>
       </FormControl>
 
       {/* 가입버튼 !(not) 기본이 비활성화 */}

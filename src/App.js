@@ -12,6 +12,7 @@ import { BoardView } from "./page/board/BoardView";
 import { BoardEdit } from "./page/board/BoardEdit";
 import { MemberSginup } from "./page/member/MemberSginup";
 import { MemberList } from "./page/member/MemberList";
+import { MemberView } from "./page/member/MemberView";
 
 const routes = createBrowserRouter(
   createRoutesFromElements(
@@ -25,6 +26,7 @@ const routes = createBrowserRouter(
       <Route path="edit/:id" element={<BoardEdit />} />
       <Route path="signup" element={<MemberSginup />} />
       <Route path="member/list" element={<MemberList />} />
+      <Route path="member" element={<MemberView />} />
     </Route>,
   ),
 );

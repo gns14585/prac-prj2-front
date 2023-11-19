@@ -93,7 +93,13 @@ export function MemberView() {
         <Input value={member.email} readOnly />
       </FormControl>
 
-      <Button colorScheme="blue">수정</Button>
+      {/* 수정버튼을 눌렀을떄 새로운 페이지로 이동되게 */}
+      <Button
+        colorScheme="blue"
+        onClick={() => navigate("edit?" + params.toString())}
+      >
+        수정
+      </Button>
       <Button colorScheme="red" onClick={onOpen}>
         탈퇴
       </Button>

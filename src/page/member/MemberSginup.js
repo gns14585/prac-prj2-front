@@ -10,6 +10,7 @@ import {
 } from "@chakra-ui/react";
 import { useState } from "react";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 export function MemberSginup() {
   const [id, setId] = useState("");
@@ -20,7 +21,9 @@ export function MemberSginup() {
   // 아이디 가능한지에 대한 변수 , 기본값은 false
   const [idAvailable, setIdAvailable] = useState(false);
   const [emailAvailable, setEmailAvailable] = useState(false);
+
   const toast = useToast();
+  const navigate = useNavigate();
 
   // submitAvailable 함수는 회원가입 폼 안에 하나라도 작성되지 않으면
   // 가입버튼 활성화 되지 않도록 설정
@@ -53,9 +56,26 @@ export function MemberSginup() {
         password,
         email,
       })
-      .then(() => console.log("good"))
-      .catch(() => console.log("bad"))
-      .finally(() => console.log("done"));
+      .then(() => {
+        toast({
+          description: "회원가입이 완료되었습니다.",
+          status: "success",
+        });
+        navigate("/");
+      })
+      .catch((error) => {
+        if (error.response.status === 400) {
+          toast({
+            description: "입력값을 확인해주세요.",
+            status: "error",
+          });
+        } else {
+          toast({
+            description: "가입중에 오류가 발생하였습니다.",
+            status: "error",
+          });
+        }
+      });
   }
 
   function handleIdCheck() {

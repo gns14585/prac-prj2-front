@@ -26,6 +26,8 @@ export function MemberEdit() {
   const [password, setPassword] = useState("");
   const [passwordCheck, setPasswordCheck] = useState("");
   const [emailAvailable, setEmailAvailable] = useState(false);
+  const [nickName, setNickName] = useState("");
+  const [nickNameAvailable, setNickNameAvailable] = useState(false);
 
   const toast = useToast();
   const { onClose, onOpen, isOpen } = useDisclosure();
@@ -49,9 +51,16 @@ export function MemberEdit() {
   if (member !== null) {
     sameOriginEmail = member.email === email;
   }
-
   // 기존 이메일과 같거나, 중복확인을 했거나
   let emailChecked = sameOriginEmail || emailAvailable;
+
+  // 기존 닉네임과 같은지?
+  let sameOrginNickName = false;
+  if (member !== null) {
+    sameOrginNickName = member.nickName === nickName;
+  }
+  // 기존 닉네임과 같거나, 중복확인을 했거나
+  let nickNameChecked = sameOrginNickName || nickNameAvailable;
 
   // 암호가 없으면 기존암호
   // 암호를 작성하면 새 암호, 암호확인 체크
@@ -86,6 +95,7 @@ export function MemberEdit() {
         }
       });
   }
+
   if (member == null) {
     return <Spinner />;
   }
@@ -93,7 +103,7 @@ export function MemberEdit() {
   function handleSubmit() {
     // put /api/member/edit {id, password, email}
     axios
-      .put("/api/member/edit", { id: member.id, password, email })
+      .put("/api/member/edit", { id: member.id, password, email, nickName })
       .then(() => {
         toast({
           description: "회원정보가 수정되었습니다..",
@@ -116,6 +126,30 @@ export function MemberEdit() {
         }
       })
       .finally(() => onClose());
+  }
+
+  function handleNickNameCheck() {
+    const searchParams = new URLSearchParams();
+    searchParams.set("nickName", nickName);
+
+    axios
+      .get("/api/member/check?" + searchParams.toString())
+      .then(() => {
+        setNickNameAvailable(false);
+        toast({
+          description: "닉네임이 이미 존재합니다.",
+          status: "warning",
+        });
+      })
+      .catch((error) => {
+        setNickNameAvailable(true);
+        if (error.response.status === 404) {
+          toast({
+            description: "닉네임 사용이 가능합니다.",
+            status: "success",
+          });
+        }
+      });
   }
 
   return (
@@ -142,6 +176,22 @@ export function MemberEdit() {
         </FormControl>
       )}
 
+      <FormControl>
+        <FormLabel>닉네임</FormLabel>
+        <Flex>
+          <Input
+            value={nickName}
+            onChange={(e) => {
+              setNickName(e.target.value);
+              setNickNameAvailable(false);
+            }}
+          />
+          <Button isDisabled={nickNameChecked} onClick={handleNickNameCheck}>
+            중복확인
+          </Button>
+        </Flex>
+      </FormControl>
+
       {/* email을 변경하면(작성시작) 중복체크 다시 하도록 */}
       {/* 기존 email과 같으면 중복확인 안해도 됨. */}
       <FormControl>
@@ -163,8 +213,8 @@ export function MemberEdit() {
       </FormControl>
 
       <Button
-        // 암호와 이메일이 다 true일때 저장버튼 활성화
-        isDisabled={!emailChecked || !passwordChecekd}
+        // 암호와 이메일, 닉네임이 다 true일때 저장버튼 활성화
+        isDisabled={!emailChecked || !passwordChecekd || !nickNameChecked}
         colorScheme="purple"
         onClick={onOpen}
       >

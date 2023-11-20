@@ -17,10 +17,12 @@ export function MemberSginup() {
   const [password, setPassword] = useState("");
   const [passwordCheck, setPasswordCheck] = useState("");
   const [email, setEmail] = useState("");
+  const [nickName, setNickName] = useState("");
 
   // 아이디 가능한지에 대한 변수 , 기본값은 false
   const [idAvailable, setIdAvailable] = useState(false);
   const [emailAvailable, setEmailAvailable] = useState(false);
+  const [nickNameAvailable, setNickNameAvailable] = useState(false);
 
   const toast = useToast();
   const navigate = useNavigate();
@@ -36,6 +38,9 @@ export function MemberSginup() {
     submitAvailable = false;
   }
   if (!emailAvailable) {
+    submitAvailable = false;
+  }
+  if (!nickNameAvailable) {
     submitAvailable = false;
   }
 
@@ -55,6 +60,7 @@ export function MemberSginup() {
         id,
         password,
         email,
+        nickName,
       })
       .then(() => {
         toast({
@@ -131,6 +137,30 @@ export function MemberSginup() {
       });
   }
 
+  function handleNickNameCheck() {
+    const searchParams = new URLSearchParams();
+    searchParams.set("nickName", nickName);
+
+    axios
+      .get("/api/member/check?" + searchParams.toString())
+      .then(() => {
+        setNickNameAvailable(false);
+        toast({
+          description: "닉네임이 이미 존재합니다.",
+          status: "warning",
+        });
+      })
+      .catch((error) => {
+        setNickNameAvailable(true);
+        if (error.response.status === 404) {
+          toast({
+            description: "닉네임 사용이 가능합니다.",
+            status: "success",
+          });
+        }
+      });
+  }
+
   return (
     <Box>
       <h1>회원 가입</h1>
@@ -170,6 +200,22 @@ export function MemberSginup() {
         />
         {/* isInvalid 사용 시 FormErrorMessage 활성화됨 */}
         <FormErrorMessage>암호가 다릅니다.</FormErrorMessage>
+      </FormControl>
+
+      <FormControl isInvalid={!nickNameAvailable}>
+        <FormLabel>닉네임</FormLabel>
+        <Flex>
+          <Input
+            type="text"
+            value={nickName}
+            onChange={(e) => {
+              setNickNameAvailable(false);
+              setNickName(e.target.value);
+            }}
+          />
+          <Button onClick={handleNickNameCheck}>중복체크</Button>
+        </Flex>
+        <FormErrorMessage>닉네임 중복체크를 해주세요.</FormErrorMessage>
       </FormControl>
 
       <FormControl isInvalid={!emailAvailable}>
